@@ -224,15 +224,18 @@ impl App {
                     let avail = ui.available_width();
                     let btn_w = 20.0;
                     let gap = ui.spacing().item_spacing.x;
+                    let label_w = (avail - btn_w - gap).max(0.0);
 
-                    let sel = ui.add_sized(
-                        [avail - btn_w - gap, row_h],
-                        egui::SelectableLabel::new(selected, &label),
-                    );
-                    let del = ui.add_sized(
-                        [btn_w, row_h],
-                        egui::Button::new("×").small(),
-                    );
+                    // allocate_ui_with_layout で top_down(LEFT) コンテキストを作る。
+                    // SelectableLabel はこのコンテキストの h_align() = LEFT を参照して
+                    // テキストを左寄せに配置する。
+                    let sel = ui.allocate_ui_with_layout(
+                        egui::vec2(label_w, row_h),
+                        egui::Layout::top_down(egui::Align::LEFT),
+                        |ui| ui.selectable_label(selected, &label),
+                    ).inner;
+
+                    let del = ui.add_sized([btn_w, row_h], egui::Button::new("×").small());
                     (sel.clicked(), del.clicked())
                 }).inner;
 
