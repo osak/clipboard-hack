@@ -231,7 +231,7 @@ impl App {
                     // テキストを左寄せに配置する。
                     let sel = ui.allocate_ui_with_layout(
                         egui::vec2(label_w, row_h),
-                        egui::Layout::top_down(egui::Align::LEFT),
+                        egui::Layout::top_down_justified(egui::Align::LEFT),
                         |ui| ui.selectable_label(selected, &label),
                     ).inner;
 
