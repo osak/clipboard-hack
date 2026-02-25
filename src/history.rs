@@ -46,8 +46,8 @@ impl ClipboardEntry {
         Local
             .timestamp_opt(unix_secs, 0)
             .single()
-            .map(|dt| dt.format("%H:%M:%S").to_string())
-            .unwrap_or_else(|| "??:??:??".to_string())
+            .map(|dt| dt.format("%Y-%m-%d %H:%M:%S").to_string())
+            .unwrap_or_else(|| "????-??-?? ??:??:??".to_string())
     }
 }
 
