@@ -8,6 +8,7 @@ use crate::clipboard_backend;
 use crate::history::ClipboardHistory;
 use crate::hotkey::{hotkey_display, start_hotkey_listener};
 use crate::interpreter::{get_interpreters, Interpreter, InterpretItem};
+use crate::window_state;
 
 /// Touching this file signals the app to capture the clipboard.
 /// Useful for wiring a Wayland compositor hotkey:
@@ -23,6 +24,8 @@ pub struct App {
     interpreters: Vec<Box<dyn Interpreter>>,
     status_message: String,
     trigger_path: PathBuf,
+    window_state_path: PathBuf,
+    last_outer_rect: Option<egui::Rect>,
 }
 
 /// Search common system font paths for a file that supports Japanese,
@@ -113,6 +116,8 @@ impl App {
         let history = ClipboardHistory::load(&history_path, 50);
         eprintln!("[history] Loaded {} entries from {}", history.len(), history_path.display());
 
+        let window_state_path = window_state::window_state_file_path();
+
         let is_wayland = std::env::var("WAYLAND_DISPLAY").is_ok();
         let status = if is_wayland {
             format!(
@@ -133,12 +138,29 @@ impl App {
             interpreters: get_interpreters(),
             status_message: status,
             trigger_path: PathBuf::from(TRIGGER_FILE),
+            window_state_path,
+            last_outer_rect: None,
         }
     }
 
     fn save_history(&mut self) {
         if let Err(e) = self.history.save(&self.history_path) {
             eprintln!("[history] Save failed: {e}");
+        }
+    }
+
+    fn save_window_state(&mut self) {
+        if let Some(rect) = self.last_outer_rect {
+            let is_wayland = std::env::var("WAYLAND_DISPLAY").is_ok();
+            let state = window_state::WindowState {
+                x: if is_wayland { 0.0 } else { rect.min.x },
+                y: if is_wayland { 0.0 } else { rect.min.y },
+                width: rect.size().x,
+                height: rect.size().y,
+            };
+            if let Err(e) = window_state::save(&state, &self.window_state_path) {
+                eprintln!("[window_state] Save failed: {e}");
+            }
         }
     }
 
@@ -364,6 +386,22 @@ impl App {
 
 impl eframe::App for App {
     fn update(&mut self, ctx: &egui::Context, _frame: &mut eframe::Frame) {
+        let is_wayland = std::env::var("WAYLAND_DISPLAY").is_ok();
+        ctx.input(|i| {
+            let vp = i.viewport();
+            let is_normal = vp.minimized != Some(true) && vp.maximized != Some(true);
+            if is_normal {
+                if is_wayland {
+                    // Wayland: outer_rect は常に None のため screen_rect でサイズのみ記録
+                    let screen = i.screen_rect();
+                    let rect = egui::Rect::from_min_size(egui::Pos2::ZERO, screen.size());
+                    self.last_outer_rect = Some(rect);
+                } else if let Some(rect) = vp.outer_rect {
+                    self.last_outer_rect = Some(rect);
+                }
+            }
+        });
+
         // 1. rdev-based global hotkey (works on X11 / macOS)
         while self.rx.try_recv().is_ok() {
             self.capture_clipboard();
@@ -399,5 +437,9 @@ impl eframe::App for App {
         });
 
         ctx.request_repaint_after(std::time::Duration::from_millis(50));
+    }
+
+    fn on_exit(&mut self, _gl: Option<&eframe::glow::Context>) {
+        self.save_window_state();
     }
 }
