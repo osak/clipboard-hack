@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <!-- 背景: 角丸正方形、ダークグリーン -->
+  <rect width="256" height="256" rx="40" ry="40" fill="#1a472a"/>
+
+  <!-- クリップボード本体 -->
+  <rect x="56" y="68" width="144" height="164" rx="10" ry="10" fill="#2d6a4f"/>
+
+  <!-- クリップ (上部の留め金) -->
+  <rect x="96" y="52" width="64" height="32" rx="8" ry="8" fill="#1a472a"/>
+  <rect x="108" y="46" width="40" height="20" rx="10" ry="10" fill="#52b788"/>
+
+  <!-- 履歴/時計アイコン: 円 -->
+  <circle cx="128" cy="158" r="44" fill="none" stroke="#52b788" stroke-width="12"/>
+
+  <!-- 時計の針 -->
+  <line x1="128" y1="158" x2="128" y2="126" stroke="#74c69d" stroke-width="10" stroke-linecap="round"/>
+  <line x1="128" y1="158" x2="152" y2="172" stroke="#74c69d" stroke-width="10" stroke-linecap="round"/>
+
+  <!-- 反時計回り矢印 (履歴を示す): 円弧 + 矢印ヘッド -->
+  <path d="M 168 130 A 44 44 0 0 0 90 148"
+        fill="none" stroke="#95d5b2" stroke-width="9" stroke-linecap="round"/>
+  <polygon points="84,136 84,162 104,148" fill="#95d5b2"/>
+</svg>

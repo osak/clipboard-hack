@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Clipboard Hack
+Comment=Clipboard history manager with content interpreters
+Exec={{EXEC}}
+Icon=clipboard-hack
+Type=Application
+Categories=Utility;
